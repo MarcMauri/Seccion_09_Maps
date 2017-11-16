@@ -1,9 +1,11 @@
 package com.example.marcm.seccion_09_maps.Fragments;
 
 
+import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -37,6 +39,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     private MarkerOptions marker;
 
+    public static int GPS_DISABLED = 0;
+    public static int GPS_ENABLED = 1;
+
     public MapFragment() {
     }
 
@@ -58,6 +63,28 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             mapView.onResume();
             mapView.getMapAsync(this);
         }
+
+        this.checkIfGpsIsEnabled();
+    }
+
+    private void checkIfGpsIsEnabled() {
+        try {
+            int gpsSignal = Settings.Secure.getInt(getActivity().getContentResolver(), Settings.Secure.LOCATION_MODE);
+
+            if (gpsSignal == GPS_DISABLED) {
+                Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
+                startActivity(intent);
+            }
+
+        } catch (Settings.SettingNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        checkIfGpsIsEnabled();
     }
 
     @Override
@@ -122,14 +149,5 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         marker.setSnippet(city + ",  " + country + " (" + postalCode + ")");
         marker.showInfoWindow();
 
-        /*Toast.makeText(
-                getContext(),
-                "Address: " + address + "\n" +
-                        "City: " + city + "\n" +
-                        "State: " + state + "\n" +
-                        "Country: " + country + "\n" +
-                        "Postal code: " + postalCode,
-                Toast.LENGTH_LONG
-        ).show();*/
     }
 }
