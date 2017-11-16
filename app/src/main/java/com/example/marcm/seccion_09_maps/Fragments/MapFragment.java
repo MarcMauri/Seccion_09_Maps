@@ -17,6 +17,7 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -34,8 +35,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     private Geocoder geocoder;
     private List<Address> addresses;
 
+    private MarkerOptions marker;
+
     public MapFragment() {
-        // Required empty public constructor
     }
 
 
@@ -67,8 +69,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         /* Set camera update: zoom */
         CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
 
+        // Customizando el marker
+        marker = new MarkerOptions();
+        marker.position(place);
+        marker.title("Mi marcador");
+        marker.draggable(true);
+        marker.snippet("Esto es una caja de texto donde modificar los datos");
+        marker.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.star_on));
+
         /* Add marker on map */
-        gMap.addMarker(new MarkerOptions().position(place).title("Marker in Seville").draggable(true));
+        gMap.addMarker(marker);
         /* Set camera position to added marker */
         gMap.moveCamera(CameraUpdateFactory.newLatLng(place));
         /* Set camera animation: zoom */
@@ -109,7 +119,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         String country = currentAddress.getCountryName();
         String postalCode = currentAddress.getPostalCode();
 
-        Toast.makeText(
+        marker.setSnippet(city + ",  " + country + " (" + postalCode + ")");
+
+        /*Toast.makeText(
                 getContext(),
                 "Address: " + address + "\n" +
                         "City: " + city + "\n" +
@@ -117,6 +129,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
                         "Country: " + country + "\n" +
                         "Postal code: " + postalCode,
                 Toast.LENGTH_LONG
-        ).show();
+        ).show();*/
     }
 }
