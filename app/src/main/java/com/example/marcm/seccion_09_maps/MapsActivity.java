@@ -2,6 +2,7 @@ package com.example.marcm.seccion_09_maps;
 
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -10,6 +11,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
@@ -40,9 +42,13 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
+        // Limitar MIN | MAX zoom
+        //mMap.setMinZoomPreference(10);
+        //mMap.setMaxZoomPreference(15);
+
         // Add a marker in Seville
         LatLng sevilla = new LatLng(37.40911491941731, -5.99075691250005);
-        mMap.addMarker(new MarkerOptions().position(sevilla).title("Hola desde Sevilla!"));
+        mMap.addMarker(new MarkerOptions().position(sevilla).title("Hola desde Sevilla!").draggable(true));
 
         /* Creamos objeto camara para configurar la vista
             target = donde enfoca la camara
@@ -52,7 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         */
         CameraPosition camera = new CameraPosition.Builder()
                 .target(sevilla)
-                .zoom(18)           // limit -> 21
+                .zoom(15)           // limit -> 21
                 .bearing(0)         // 0 - 360 degrees
                 .tilt(45)           // 0 - 90 degree
                 .build();
@@ -60,5 +66,57 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         // ... y la configuramos en el mapa
         mMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
         //mMap.moveCamera(CameraUpdateFactory.newLatLng(sevilla));
+
+
+        //** LISTENERS **//
+
+        mMap.setOnMapClickListener(new GoogleMap.OnMapClickListener() {
+            @Override
+            public void onMapClick(LatLng latLng) {
+                Toast.makeText(
+                        MapsActivity.this,
+                        "Click on:" +
+                                "\nLat: " + latLng.latitude +
+                                "\nLong: " + latLng.longitude,
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+
+        mMap.setOnMapLongClickListener(new GoogleMap.OnMapLongClickListener() {
+            @Override
+            public void onMapLongClick(LatLng latLng) {
+                Toast.makeText(
+                        MapsActivity.this,
+                        "Long Click on:" +
+                                "\nLat: " + latLng.latitude +
+                                "\nLong: " + latLng.longitude,
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
+
+        mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+            @Override
+            public void onMarkerDragStart(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDrag(Marker marker) {
+
+            }
+
+            @Override
+            public void onMarkerDragEnd(Marker marker) {
+                Toast.makeText(
+                        MapsActivity.this,
+                        "Marker dragged to:" +
+                                "\nLat: " + marker.getPosition().latitude +
+                                "\nLong: " + marker.getPosition().longitude,
+                        Toast.LENGTH_SHORT
+                ).show();
+            }
+        });
     }
 }
