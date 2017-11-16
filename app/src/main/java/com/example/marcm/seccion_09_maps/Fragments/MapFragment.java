@@ -1,27 +1,38 @@
 package com.example.marcm.seccion_09_maps.Fragments;
 
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.marcm.seccion_09_maps.R;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
+
+public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerDragListener {
 
     private View rootView;
     private GoogleMap gMap;
     private MapView mapView;
+
+    private Geocoder geocoder;
+    private List<Address> addresses;
 
     public MapFragment() {
         // Required empty public constructor
@@ -53,21 +64,59 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
         /* Create marker */
         LatLng place = new LatLng(37.3890924, -5.9844589);
+        /* Set camera update: zoom */
+        CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
+
         /* Add marker on map */
-        gMap.addMarker(new MarkerOptions().position(place).title("Marker in Seville"));
+        gMap.addMarker(new MarkerOptions().position(place).title("Marker in Seville").draggable(true));
+        /* Set camera position to added marker */
+        gMap.moveCamera(CameraUpdateFactory.newLatLng(place));
+        /* Set camera animation: zoom */
+        gMap.animateCamera(zoom);;
 
-        /* Set camera on added marker */
-        //gMap.moveCamera(CameraUpdateFactory.newLatLng(place));
+        /* Set OnMarkerDrag Listener*/
+        gMap.setOnMarkerDragListener(this);
 
-        /* Create camera position */
-        CameraPosition camera = new CameraPosition.Builder()
-                .target(place)
-                .zoom(15)           // limit -> 21
-                .bearing(0)         // 0 - 360 degrees
-                .tilt(45)           // 0 - 90 degree
-                .build();
+        /* Este objeto nos permite obtener los datos del mapa tales como calles, paises,...) */
+        geocoder = new Geocoder(getContext(), Locale.getDefault());
+    }
 
-        /* Set camera position on map */
-        gMap.moveCamera(CameraUpdateFactory.newCameraPosition(camera));
+    @Override
+    public void onMarkerDragStart(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDrag(Marker marker) {
+
+    }
+
+    @Override
+    public void onMarkerDragEnd(Marker marker) {
+        double latitude= marker.getPosition().latitude;
+        double longitude = marker.getPosition().longitude;
+
+        try {
+            addresses = geocoder.getFromLocation(latitude, longitude, 1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        Address currentAddress = addresses.get(0);
+        String address = currentAddress.getAddressLine(0);
+        String city = currentAddress.getLocality();
+        String state = currentAddress.getAdminArea();
+        String country = currentAddress.getCountryName();
+        String postalCode = currentAddress.getPostalCode();
+
+        Toast.makeText(
+                getContext(),
+                "Address: " + address + "\n" +
+                        "City: " + city + "\n" +
+                        "State: " + state + "\n" +
+                        "Country: " + country + "\n" +
+                        "Postal code: " + postalCode,
+                Toast.LENGTH_LONG
+        ).show();
     }
 }
