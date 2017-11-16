@@ -3,10 +3,12 @@ package com.example.marcm.seccion_09_maps;
 import android.support.v4.app.FragmentActivity;
 import android.os.Bundle;
 
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
@@ -38,9 +40,25 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     public void onMapReady(GoogleMap googleMap) {
         mMap = googleMap;
 
-        // Add a marker in Sydney and move the camera
-        LatLng sevilla = new LatLng(37.39165961039112, -5.9880103304688);
+        // Add a marker in Seville
+        LatLng sevilla = new LatLng(37.40911491941731, -5.99075691250005);
         mMap.addMarker(new MarkerOptions().position(sevilla).title("Hola desde Sevilla!"));
-        mMap.moveCamera(CameraUpdateFactory.newLatLng(sevilla));
+
+        /* Creamos objeto camara para configurar la vista
+            target = donde enfoca la camara
+            zoom = || 1 (mundo) | 5 (continente) | 10 (ciudad) | 15 (calle) | 20 (edificio) ||
+            bearing = orientacion de la camara hacia el este
+            tilt = inclinacion de la camara
+        */
+        CameraPosition camera = new CameraPosition.Builder()
+                .target(sevilla)
+                .zoom(18)           // limit -> 21
+                .bearing(0)         // 0 - 360 degrees
+                .tilt(45)           // 0 - 90 degree
+                .build();
+
+        // ... y la configuramos en el mapa
+        mMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+        //mMap.moveCamera(CameraUpdateFactory.newLatLng(sevilla));
     }
 }
