@@ -1,11 +1,10 @@
 package com.example.marcm.seccion_09_maps.Activities;
 
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.Toast;
 
 import com.example.marcm.seccion_09_maps.Fragments.MapFragment;
 import com.example.marcm.seccion_09_maps.Fragments.WelcomeFragment;

@@ -1,19 +1,15 @@
 package com.example.marcm.seccion_09_maps.Fragments;
 
 
-import android.content.DialogInterface;
-import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
-import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.example.marcm.seccion_09_maps.R;
 import com.google.android.gms.maps.CameraUpdate;
@@ -30,7 +26,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerDragListener, View.OnClickListener {
+public class MapWithoutGpsFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerDragListener, GoogleMap.OnMapClickListener, GoogleMap.OnMapLongClickListener {
 
     private View rootView;
     private GoogleMap gMap;
@@ -41,23 +37,14 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     private MarkerOptions marker;
 
-    private FloatingActionButton fab;
-
-    public static int GPS_DISABLED = 0;
-    public static int GPS_ENABLED = 1;
-
-    public MapFragment() {
+    public MapWithoutGpsFragment() {
     }
 
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_map, container, false);
-
-        fab = (FloatingActionButton) rootView.findViewById(R.id.fab);
-        fab.setOnClickListener(this);
-
+        rootView = inflater.inflate(R.layout.fragment_map_without_gps, container, false);
         return rootView;
     }
 
@@ -71,33 +58,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
             mapView.onResume();
             mapView.getMapAsync(this);
         }
-    }
-
-    private void checkIfGpsIsEnabled() {
-        try {
-            int gpsSignal = Settings.Secure.getInt(getActivity().getContentResolver(), Settings.Secure.LOCATION_MODE);
-
-            if (gpsSignal == GPS_DISABLED) {
-                showInfoAlert();
-            }
-        } catch (Settings.SettingNotFoundException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void showInfoAlert() {
-        new AlertDialog.Builder(getContext())
-                .setTitle("GPS Signal")
-                .setMessage("You don't have GPS signal enabled. Would you like to enable the GPS signal?")
-                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialogInterface, int i) {
-                        Intent intent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-                        startActivity(intent);
-                    }
-                })
-                .setNegativeButton("CANCEL", null)
-                .show();
     }
 
     @Override
@@ -123,13 +83,39 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         gMap.moveCamera(CameraUpdateFactory.newLatLng(place));
         /* Set camera animation: zoom */
         gMap.animateCamera(zoom);
-        ;
 
-        /* Set OnMarkerDrag Listener*/
+        /* Set listeners */
+        gMap.setOnMapClickListener(this);
+        gMap.setOnMapLongClickListener(this);
         gMap.setOnMarkerDragListener(this);
 
         /* Este objeto nos permite obtener los datos del mapa tales como calles, paises,...) */
         geocoder = new Geocoder(getContext(), Locale.getDefault());
+    }
+
+
+    //** LISTENERS **/
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+        Toast.makeText(
+                getContext(),
+                "Click on:" +
+                        "\nLat: " + latLng.latitude +
+                        "\nLong: " + latLng.longitude,
+                Toast.LENGTH_SHORT
+        ).show();
+    }
+
+    @Override
+    public void onMapLongClick(LatLng latLng) {
+        Toast.makeText(
+                getContext(),
+                "Long Click on:" +
+                        "\nLat: " + latLng.latitude +
+                        "\nLong: " + latLng.longitude,
+                Toast.LENGTH_SHORT
+        ).show();
     }
 
     @Override
@@ -165,8 +151,4 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     }
 
-    @Override
-    public void onClick(View view) {
-        this.checkIfGpsIsEnabled();
-    }
 }
