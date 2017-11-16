@@ -5,6 +5,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.example.marcm.seccion_09_maps.Fragments.MapFragment;
 import com.example.marcm.seccion_09_maps.Fragments.WelcomeFragment;
@@ -19,8 +20,12 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        currentFragment = new WelcomeFragment();
-        changeFragment(currentFragment);
+        /* Si es la primera vez que se llama este activity, savedInst.. es nulo */
+        /* Si es la primera vez, llamamos al fragment por defecto; en caso contrario no tocamos nada */
+        if (savedInstanceState == null) {
+            currentFragment = new WelcomeFragment();
+            changeFragment(currentFragment);
+        }
     }
 
     @Override
