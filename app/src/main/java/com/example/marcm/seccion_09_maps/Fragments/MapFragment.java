@@ -93,7 +93,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
 
     @Override
     public void onMarkerDragStart(Marker marker) {
-
+        marker.hideInfoWindow();
     }
 
     @Override
@@ -120,6 +120,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         String postalCode = currentAddress.getPostalCode();
 
         marker.setSnippet(city + ",  " + country + " (" + postalCode + ")");
+        marker.showInfoWindow();
 
         /*Toast.makeText(
                 getContext(),
