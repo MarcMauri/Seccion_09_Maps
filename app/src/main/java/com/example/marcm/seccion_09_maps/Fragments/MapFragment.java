@@ -79,7 +79,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     private boolean isGpsEnabled() {
         try {
             int gpsSignal = Settings.Secure.getInt(getActivity().getContentResolver(), Settings.Secure.LOCATION_MODE);
-            return gpsSignal == GPS_ENABLED;
+            return gpsSignal != GPS_DISABLED;
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
             return false;
