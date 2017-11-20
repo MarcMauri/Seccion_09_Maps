@@ -28,6 +28,8 @@ import com.example.marcm.seccion_09_maps.R;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, LocationListener {
 
@@ -86,9 +88,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
             // for ActivityCompat#requestPermissions for more details.
             return;
         }
-        gMap.setMyLocationEnabled(true);
+        //gMap.setMyLocationEnabled(true);
         /* Quitar el boton de "Mi posicion" de la UI */
-        gMap.getUiSettings().setMyLocationButtonEnabled(false);
+        //gMap.getUiSettings().setMyLocationButtonEnabled(false);
 
         locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, this);
         locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
@@ -128,7 +130,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
 
     @Override
     public void onLocationChanged(Location location) {
-        Toast.makeText(getContext(), "Changed!", Toast.LENGTH_SHORT).show();
+        Toast.makeText(getContext(), "Changed! -> " + location.getProvider(), Toast.LENGTH_SHORT).show();
+        gMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).draggable(true));
     }
 
     @Override
