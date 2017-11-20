@@ -22,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
         /* Si es la primera vez que se llama este activity, savedInst.. es nulo */
         /* Si es la primera vez, llamamos al fragment por defecto; en caso contrario no tocamos nada */
         if (savedInstanceState == null) {
-            currentFragment = new WelcomeFragment();
+            currentFragment = new MapFragment();
             changeFragment(currentFragment);
         }
     }

@@ -20,7 +20,7 @@
         android:backgroundTint="@color/colorAccent"
         android:clickable="true"
         android:focusable="true"
-        android:foreground="@android:drawable/ic_menu_compass"
+        android:src="@android:drawable/ic_menu_compass"
         app:borderWidth="0dp"
 
 

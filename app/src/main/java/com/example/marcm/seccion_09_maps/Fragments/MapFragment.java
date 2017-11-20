@@ -1,47 +1,52 @@
 package com.example.marcm.seccion_09_maps.Fragments;
 
 
+import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.location.Address;
-import android.location.Geocoder;
+import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.example.marcm.seccion_09_maps.Activities.MainActivity;
 import com.example.marcm.seccion_09_maps.R;
-import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-
-public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleMap.OnMarkerDragListener, View.OnClickListener {
+public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, LocationListener {
 
     private View rootView;
     private GoogleMap gMap;
     private MapView mapView;
 
-    private Geocoder geocoder;
-    private List<Address> addresses;
-
-    private MarkerOptions marker;
-
     private FloatingActionButton fab;
+
+    private LocationManager locationManager;
+    private Location currentLocation;
+
+    private Marker marker;
+    private CameraPosition camera;
 
     public static int GPS_DISABLED = 0;
     public static int GPS_ENABLED = 1;
@@ -73,15 +78,37 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
         }
     }
 
-    private void checkIfGpsIsEnabled() {
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        gMap = googleMap;
+        locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
+
+        /* TODO: Comprobar si API >= M tiene ya el permiso permitido, o no. Sino la siguiente comprobacion no nos dara feedback */
+        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
+        //gMap.setMyLocationEnabled(true);
+        /* Quitar el boton de "Mi posicion" de la UI */
+        //gMap.getUiSettings().setMyLocationButtonEnabled(false);
+
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, this);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000, 0, this);
+    }
+
+    private boolean isGpsEnabled() {
         try {
             int gpsSignal = Settings.Secure.getInt(getActivity().getContentResolver(), Settings.Secure.LOCATION_MODE);
-
-            if (gpsSignal == GPS_DISABLED) {
-                showInfoAlert();
-            }
+            return gpsSignal != GPS_DISABLED;
         } catch (Settings.SettingNotFoundException e) {
             e.printStackTrace();
+            return false;
         }
     }
 
@@ -101,72 +128,76 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, GoogleM
     }
 
     @Override
-    public void onMapReady(GoogleMap googleMap) {
-        gMap = googleMap;
-
-        /* Create marker */
-        LatLng place = new LatLng(37.3890924, -5.9844589);
-        /* Set camera update: zoom */
-        CameraUpdate zoom = CameraUpdateFactory.zoomTo(15);
-
-        // Customizando el marker
-        marker = new MarkerOptions();
-        marker.position(place);
-        marker.title("Mi marcador");
-        marker.draggable(true);
-        marker.snippet("Esto es una caja de texto donde modificar los datos");
-        marker.icon(BitmapDescriptorFactory.fromResource(android.R.drawable.star_on));
-
-        /* Add marker on map */
-        gMap.addMarker(marker);
-        /* Set camera position to added marker */
-        gMap.moveCamera(CameraUpdateFactory.newLatLng(place));
-        /* Set camera animation: zoom */
-        gMap.animateCamera(zoom);
-        ;
-
-        /* Set OnMarkerDrag Listener*/
-        gMap.setOnMarkerDragListener(this);
-
-        /* Este objeto nos permite obtener los datos del mapa tales como calles, paises,...) */
-        geocoder = new Geocoder(getContext(), Locale.getDefault());
-    }
-
-    @Override
-    public void onMarkerDragStart(Marker marker) {
-        marker.hideInfoWindow();
-    }
-
-    @Override
-    public void onMarkerDrag(Marker marker) {
-
-    }
-
-    @Override
-    public void onMarkerDragEnd(Marker marker) {
-        double latitude = marker.getPosition().latitude;
-        double longitude = marker.getPosition().longitude;
-
-        try {
-            addresses = geocoder.getFromLocation(latitude, longitude, 1);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        Address currentAddress = addresses.get(0);
-        String address = currentAddress.getAddressLine(0);
-        String city = currentAddress.getLocality();
-        String state = currentAddress.getAdminArea();
-        String country = currentAddress.getCountryName();
-        String postalCode = currentAddress.getPostalCode();
-
-        marker.setSnippet(city + ",  " + country + " (" + postalCode + ")");
-        marker.showInfoWindow();
-
-    }
-
-    @Override
     public void onClick(View view) {
-        this.checkIfGpsIsEnabled();
+        if (!this.isGpsEnabled()) {
+            this.showInfoAlert();
+        } else {
+            if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+                // TODO: Consider calling
+                //    ActivityCompat#requestPermissions
+                // here to request the missing permissions, and then overriding
+                //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                //                                          int[] grantResults)
+                // to handle the case where the user grants the permission. See the documentation
+                // for ActivityCompat#requestPermissions for more details.
+                return;
+            }
+            Location location = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location == null) {
+                location = locationManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+            }
+            currentLocation = location;
+
+            if (currentLocation != null) {
+                createOrUpdateMarkerByLocation(currentLocation);
+                /* Solo cuando se use el FAB, hacemos zoom en el mapa */
+                zoomToLocation(currentLocation);
+            }
+        }
+    }
+
+    private void createOrUpdateMarkerByLocation(Location location) {
+        if (marker == null) {
+            marker = gMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).draggable(true));
+        } else {
+            marker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
+    }
+
+    private void zoomToLocation(Location location) {
+        /* Creamos objeto camara para configurar la vista
+            target = donde enfoca la camara
+            zoom = || 1 (mundo) | 5 (continente) | 10 (ciudad) | 15 (calle) | 20 (edificio) ||
+            bearing = orientacion de la camara hacia el este
+            tilt = inclinacion de la camara
+        */
+        camera = new CameraPosition.Builder()
+                .target(new LatLng(location.getLatitude(), location.getLongitude()))
+                .zoom(15)           // limit -> 21
+                .bearing(0)         // 0 - 360 degrees
+                .tilt(45)           // 0 - 90 degree
+                .build();
+        gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
+    }
+
+    @Override
+    public void onLocationChanged(Location location) {
+        Toast.makeText(getContext(), "Changed! -> " + location.getProvider(), Toast.LENGTH_SHORT).show();
+        createOrUpdateMarkerByLocation(location);
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
     }
 }
