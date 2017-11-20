@@ -2,21 +2,28 @@ package com.example.marcm.seccion_09_maps.Fragments;
 
 
 import android.Manifest;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import com.example.marcm.seccion_09_maps.Activities.MainActivity;
 import com.example.marcm.seccion_09_maps.R;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
@@ -29,6 +36,9 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     private MapView mapView;
 
     private FloatingActionButton fab;
+
+    private LocationManager locationManager;
+    private Location currentLocation;
 
     public static int GPS_DISABLED = 0;
     public static int GPS_ENABLED = 1;
@@ -63,15 +73,42 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     @Override
     public void onMapReady(GoogleMap googleMap) {
         gMap = googleMap;
+        locationManager = (LocationManager) getContext().getSystemService(Context.LOCATION_SERVICE);
 
-        if (ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) return;
+        /* TODO: Comprobar si API >= M tiene ya el permiso permitido, o no. Sino la siguiente comprobacion no nos dara feedback */
+        if (ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(getContext(), android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // TODO: Consider calling
+            //    ActivityCompat#requestPermissions
+            // here to request the missing permissions, and then overriding
+            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+            //                                          int[] grantResults)
+            // to handle the case where the user grants the permission. See the documentation
+            // for ActivityCompat#requestPermissions for more details.
+            return;
+        }
         gMap.setMyLocationEnabled(true);
+        /* Quitar el boton de "Mi posicion" de la UI */
+        gMap.getUiSettings().setMyLocationButtonEnabled(false);
 
-        gMap.setOnMyLocationButtonClickListener(new GoogleMap.OnMyLocationButtonClickListener() {
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1000, 0, new LocationListener() {
             @Override
-            public boolean onMyLocationButtonClick() {
-                Toast.makeText(getContext(), "Hola!", Toast.LENGTH_SHORT).show();
-                return false;
+            public void onLocationChanged(Location location) {
+                Toast.makeText(getContext(), "Changed!", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onStatusChanged(String s, int i, Bundle bundle) {
+
+            }
+
+            @Override
+            public void onProviderEnabled(String s) {
+
+            }
+
+            @Override
+            public void onProviderDisabled(String s) {
+
             }
         });
     }
