@@ -25,9 +25,11 @@ import android.widget.Toast;
 
 import com.example.marcm.seccion_09_maps.Activities.MainActivity;
 import com.example.marcm.seccion_09_maps.R;
+import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
@@ -44,6 +46,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     private Location currentLocation;
 
     private Marker marker;
+    private CameraPosition camera;
 
     public static int GPS_DISABLED = 0;
     public static int GPS_ENABLED = 1;
@@ -147,6 +150,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
 
             if (currentLocation != null) {
                 createOrUpdateMarkerByLocation(currentLocation);
+                /* Solo cuando se use el FAB, hacemos zoom en el mapa */
+                zoomToLocation(currentLocation);
             }
         }
     }
@@ -157,6 +162,22 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
         } else {
             marker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
         }
+    }
+
+    private void zoomToLocation(Location location) {
+        /* Creamos objeto camara para configurar la vista
+            target = donde enfoca la camara
+            zoom = || 1 (mundo) | 5 (continente) | 10 (ciudad) | 15 (calle) | 20 (edificio) ||
+            bearing = orientacion de la camara hacia el este
+            tilt = inclinacion de la camara
+        */
+        camera = new CameraPosition.Builder()
+                .target(new LatLng(location.getLatitude(), location.getLongitude()))
+                .zoom(15)           // limit -> 21
+                .bearing(0)         // 0 - 360 degrees
+                .tilt(45)           // 0 - 90 degree
+                .build();
+        gMap.animateCamera(CameraUpdateFactory.newCameraPosition(camera));
     }
 
     @Override
