@@ -29,6 +29,7 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapView;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback, View.OnClickListener, LocationListener {
@@ -41,6 +42,8 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
 
     private LocationManager locationManager;
     private Location currentLocation;
+
+    private Marker marker;
 
     public static int GPS_DISABLED = 0;
     public static int GPS_ENABLED = 1;
@@ -131,7 +134,11 @@ public class MapFragment extends Fragment implements OnMapReadyCallback, View.On
     @Override
     public void onLocationChanged(Location location) {
         Toast.makeText(getContext(), "Changed! -> " + location.getProvider(), Toast.LENGTH_SHORT).show();
-        gMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).draggable(true));
+        if (marker == null) {
+            marker = gMap.addMarker(new MarkerOptions().position(new LatLng(location.getLatitude(), location.getLongitude())).draggable(true));
+        } else {
+            marker.setPosition(new LatLng(location.getLatitude(), location.getLongitude()));
+        }
     }
 
     @Override
